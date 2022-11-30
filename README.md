@@ -15,10 +15,8 @@ Startup.on(url:String,//启动地址
 ### 参数 :
 1. `url` : 地址   
 2. `before` : 预加载的事件  
-    #### 参数 :
     1. `context` : 如 `context`
 3. `start` : 主事件   
-    #### 参数 :
     1. `context` : 如 `context`   
     2. `window` : 加载完成时的 `Window` 上下文   
     3. `plugins` : 预加载时注入的插件
