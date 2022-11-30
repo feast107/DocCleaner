@@ -1,4 +1,4 @@
-# DocHelper
+# DocCleaner
 运行在油猴的脚本工具，提供更简洁的文档页面
 
 ---

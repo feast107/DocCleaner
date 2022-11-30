@@ -1,6 +1,6 @@
 // ==UserScript==
-// @name         DocHelper
-// @namespace    Feast.Script.DocHelper
+// @name         DocCleaner
+// @namespace    Feast.Script.DocCleaner
 // @version      1.0
 // @description  🍊各种乱七八糟的网页的人性化调整，秦始皇看了大为称赞🍊
 // @author       终宴
