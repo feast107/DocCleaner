@@ -144,11 +144,10 @@
 			return ret;
 		}
 	};
-
 	const LOG = (l) => { console.log(l); };
-
 	const href = window.location.host;
 
+	//TODO:在此开始编写
 	Startup.on("blog.csdn.net",
 		(context) => {
 			var visual = context.Visual = new UIElement('div', 'Feast-app', true);
