@@ -40,7 +40,7 @@
 					Startup.onPlugin((win) => {
 						var plugin = this.Plugins[option.Name] = win[option.Name];
 						if (option.onPlugin) {
-							description.onPlugin(plugin);
+							option.onPlugin(plugin);
 						}
 					});
 				}
