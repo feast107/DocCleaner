@@ -223,7 +223,10 @@
 		
 	Startup.on("c.pc.qq.com",
 		(context) => {
-			window.location.href = new URL(window.location.href).searchParams.get('pfurl');
+			var link = new URL(window.location.href).searchParams.get('pfurl');
+			if(link){
+				window.location.href = link;
+			}
 		},
 		null);
 
