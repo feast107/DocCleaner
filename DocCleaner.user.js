@@ -154,6 +154,9 @@
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
+			document.querySelectorAll('code').forEach(x=>{
+				x.style.userSelect = "text";
+			});
 			(function () {
 				LOG("正在收起侧边栏");
 				window.$(window).unbind();
@@ -172,6 +175,9 @@
 		},
 		(context, win, plugins) => {
 			var visual = context.Visual;
+			document.querySelectorAll('code').forEach(x=>{
+				x.style.userSelect = "text";
+			});
 			const App = {
 				mounted() {
 					LOG("挂载");
