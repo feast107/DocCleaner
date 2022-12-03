@@ -154,9 +154,7 @@
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
-			document.querySelectorAll('code').forEach(x=>{
-				x.style.userSelect = "text";
-			});
+			context.setClickable();
 			(function () {
 				LOG("正在收起侧边栏");
 				window.$(window).unbind();
@@ -175,9 +173,6 @@
 		},
 		(context, win, plugins) => {
 			var visual = context.Visual;
-			document.querySelectorAll('code').forEach(x=>{
-				x.style.userSelect = "text";
-			});
 			const App = {
 				mounted() {
 					LOG("挂载");
@@ -199,19 +194,39 @@
 			app.$message = plugins.ElementPlus.ElMessage;
 			app.mount(visual.Element);
 			visual.show();
+			context.setClickable(()=>{ app.$message.success('复制成功'); });
 			if (context.Aside) {
 				app.$message.success("左边栏收起了噢");
 			}
 			else {
 				app.$message.warning("没有找到捏");
 			}
+		},
+		{ 
+			 setClickable:(Alert) => {
+				var hs = document.getElementsByClassName('hljs-button signin');
+				for(let i = 0; i<hs.length; i++){
+					hs.item(i).onclick = () => { 
+						hljs.copyCode(event);
+						if(Alert){
+							Alert();
+						}
+					 };
+					hs.item(i).setAttribute('data-title',"尽情的复制吧");
+				}
+				document.querySelectorAll('code').forEach( x => {
+					x.style.userSelect = "text";
+				});
+			} 
 		});
 
+		
 	Startup.on("c.pc.qq.com",
 		(context) => {
 			window.location.href = new URL(window.location.href).searchParams.get('pfurl');
 		},
 		null);
+
 
 	var StackOverFlowBefore = (context) => {
 		var visual = context.Visual = new UIElement('div', 'Feast-app', true);
