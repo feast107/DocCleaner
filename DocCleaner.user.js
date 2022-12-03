@@ -207,7 +207,7 @@
 				var hs = document.getElementsByClassName('hljs-button signin');
 				for(let i = 0; i<hs.length; i++){
 					hs.item(i).onclick = () => { 
-						hljs.copyCode(event);
+						window.hljs.copyCode(event);
 						if(Alert){
 							Alert();
 						}
