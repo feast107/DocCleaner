@@ -8,6 +8,7 @@
 // @match        https://c.pc.qq.com/*
 // @match  		 https://stackoverflow.com/*
 // @match  		 https://stackoverflow.org.cn/*
+// @match  		 https://www.jianshu.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
 // @grant        none
@@ -274,6 +275,46 @@
 	}
 	Startup.on("stackoverflow.com", StackOverFlowBefore, StackOverFlowStart);
 	Startup.on("stackoverflow.org.cn", StackOverFlowBefore, StackOverFlowStart);
+
+	Startup.on("www.jianshu.com",
+	(context)=>{
+		Global.loadVue();
+		Global.loadElement();
+		let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+		Global.inject(visual.Element);
+		let rightSide = document.querySelector('aside');
+		let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
+		let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
+		var aside = context.RightAside = new UIElement('div');
+		aside.takeover(rightSide);
+		document.querySelector('[role=main]').childNodes[0].style.width = '100%'
+		visual.add(affix);
+		visual.add(drawer);
+	},
+	(context,win,plugins)=>{
+		var visual = context.Visual;
+		const App = {
+			mounted() {
+				LOG("挂载");
+			},
+			data() {
+				return {
+					RightDraw: false,
+					onRightOpen: function () {
+						var inner = document.getElementById('rightDrawerContainer');
+						Global.takeover(context.RightAside.Element, inner);
+					},
+				};
+			},
+			methods: {
+			}
+		};
+		const app = plugins.Vue.createApp(App);
+		app.use(plugins.ElementPlus);
+		app.$message = plugins.ElementPlus.ElMessage;
+		app.mount(visual.Element);
+		visual.show();
+	});
 
 
 	var config = Startup.BoostConfigs[href];
