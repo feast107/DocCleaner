@@ -9,6 +9,7 @@
 // @match  		 https://stackoverflow.com/*
 // @match  		 https://stackoverflow.org.cn/*
 // @match  		 https://www.jianshu.com/*
+// @match        https://www.codenong.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
 // @grant        none
@@ -149,6 +150,8 @@
 	const href = window.location.host;
 
 	//TODO:在此开始编写
+	
+	//CSDN
 	Startup.on("blog.csdn.net",
 		(context) => {
 			var visual = context.Visual = new UIElement('div', 'Feast-app', true);
@@ -221,7 +224,7 @@
 			} 
 		});
 
-		
+	//qq外链
 	Startup.on("c.pc.qq.com",
 		(context) => {
 			var link = new URL(window.location.href).searchParams.get('pfurl');
@@ -231,7 +234,7 @@
 		},
 		null);
 
-
+	//StackOverflow
 	var StackOverFlowBefore = (context) => {
 		var visual = context.Visual = new UIElement('div', 'Feast-app', true);
 		Global.inject(visual.Element);
@@ -276,6 +279,7 @@
 	Startup.on("stackoverflow.com", StackOverFlowBefore, StackOverFlowStart);
 	Startup.on("stackoverflow.org.cn", StackOverFlowBefore, StackOverFlowStart);
 
+	//简书
 	Startup.on("www.jianshu.com",
 	(context)=>{
 		Global.loadVue();
@@ -316,7 +320,12 @@
 		visual.show();
 	});
 
+	//码农家园
+	Startup.on("www.codenong.com",
+	(context)=>{ document.getElementById('primary').style.width = '100%'; });
 
+
+	//在以上区域编写
 	var config = Startup.BoostConfigs[href];
 	window.onload = () => {
 		Startup.PluginEvents.forEach(x => { x(window); });
