@@ -7,6 +7,9 @@
 ## [QQ外链引导页面](https://c.pc.qq.com)
 + 自动重定向
 
+## [腾讯云](https://cloud.tencent.com)
++ 收起右侧栏
+
 ## [StackOverflow](https://stackoverflow.com)
 + 收起右侧栏
 

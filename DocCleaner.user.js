@@ -6,6 +6,7 @@
 // @author       终宴
 // @match        https://blog.csdn.net/*
 // @match        https://c.pc.qq.com/*
+// @match        https://cloud.tencent.com/*
 // @match  		 https://stackoverflow.com/*
 // @match  		 https://stackoverflow.org.cn/*
 // @match  		 https://www.jianshu.com/*
@@ -42,7 +43,7 @@
 				if (option.Name && !this.Plugins[option.Name]) {
 					this.Plugins[option.Name] = {};
 					Startup.onPlugin((win) => {
-						var plugin = this.Plugins[option.Name] = win[option.Name];
+						let plugin = this.Plugins[option.Name] = win[option.Name];
 						if (option.onPlugin) {
 							option.onPlugin(plugin);
 						}
@@ -79,7 +80,7 @@
 	Object.freeze(Global);
 	class UIElement {
 		constructor(tag, id, hidden) {
-			var ele = this.Container = this.Element = document.createElement(tag);
+			let ele = this.Container = this.Element = document.createElement(tag);
 			if (id) { ele.id = id; }
 			if (hidden) { ele.style.display = 'none'; }
 		}
@@ -124,7 +125,7 @@
 			let button = new UIElement('el-button').Element;
 			button.type = "primary";
 			button.innerText = "展开";
-			button.setAttribute(':style', "{ boxShadow:'var(--el-box-shadow-dark)' }");
+			button.setAttribute(':style', "{ boxShadow:'let(--el-box-shadow-dark)' }");
 			button.setAttribute('v-on:click', '() => ' + viewModel + ' = true');
 			button.style = 'padding:20px';
 			ret.appendChild(button);
@@ -146,6 +147,33 @@
 			ret.setAttribute('v-on:open', '() => ' + openEventName + '()');
 			ret.appendChild(inner.Element);
 			return ret;
+		},
+		Wrapper: function (tag, victim, mode, afterCreate) {
+			let ret = new UIElement(tag);
+			ret.Element.style.width = victim.clientWidth + 'px';
+			switch (mode) {
+				case 'takeover':
+					ret.takeover(victim); break;
+				case 'grab':
+					ret.grab(victim); break;
+			}
+			if (afterCreate) {
+				afterCreate(ret.Element);
+			}
+			return ret.Element;
+		},
+		CreateApp: function (configure, plugins, mount, after) {
+			if (!plugins.Vue) return;
+			let ret = plugins.Vue.createApp(configure);
+			if (plugins.ElementPlus) {
+				ret.use(plugins.ElementPlus);
+				ret.$message = plugins.ElementPlus.ElMessage;
+			}
+			if (mount) {
+				ret.mount(mount);
+			}
+			if (after) { after(ret); }
+			return ret;
 		}
 	};
 	const LOG = (l) => { console.log(l); };
@@ -156,33 +184,24 @@
 	//CSDN
 	Startup.on("blog.csdn.net",
 		(context) => {
-			var visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
 			context.setClickable();
-			(function () {
-				LOG("正在收起侧边栏");
-				window.$(window).unbind();
-				let main = document.getElementById("mainBox");
-				var ASIDE = new UIElement('aside');
-				var aside = main.childNodes[5];
-				ASIDE.Element.setAttribute('width', aside.offsetWidth);
-				ASIDE.grab(aside);//提取子项
-				context.Aside = ASIDE.Element;
-				main.childNodes[3].style.width = "100%";
-			})();
+			window.$(window).unbind();
+			let main = document.getElementById("mainBox");
+			let aside = main.childNodes[5];
+			context.Aside = Template.Wrapper('aside', aside, 'grab');
+			main.childNodes[3].style.width = "100%";
 			let affix = Template.Affix('affix', 120, 'draw', (a) => { a.style.left = '30px'; });
-			let drawer = Template.Drawer("drawerContainer", context.Aside.width + 50, 'ltr', 'draw', 'onOpen');
+			let drawer = Template.Drawer("drawerContainer", aside.clientWidth + 50, 'ltr', 'draw', 'onOpen');
 			visual.add(affix);
 			visual.add(drawer);
 		},
 		(context, win, plugins) => {
-			var visual = context.Visual;
+			let visual = context.Visual;
 			const App = {
-				mounted() {
-					LOG("挂载");
-				},
 				data() {
 					return {
 						draw: false,
@@ -191,14 +210,8 @@
 						},
 					};
 				},
-				methods: {
-				}
 			};
-			const app = plugins.Vue.createApp(App);
-			app.use(plugins.ElementPlus);
-			app.$message = plugins.ElementPlus.ElMessage;
-			app.mount(visual.Element);
-			visual.show();
+			const app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
 			context.setClickable(() => { app.$message.success('复制成功'); });
 			if (context.Aside) {
 				app.$message.success("左边栏收起了噢");
@@ -209,7 +222,7 @@
 		},
 		{
 			setClickable: (Alert) => {
-				var hs = document.getElementsByClassName('hljs-button signin');
+				let hs = document.getElementsByClassName('hljs-button signin');
 				for (let i = 0; i < hs.length; i++) {
 					hs.item(i).onclick = () => {
 						window.hljs.copyCode(event);
@@ -228,54 +241,79 @@
 	//qq外链
 	Startup.on("c.pc.qq.com",
 		(context) => {
-			var link = new URL(window.location.href).searchParams.get('pfurl');
+			let link = new URL(window.location.href).searchParams.get('pfurl');
 			if (link) {
 				window.location.href = link;
 			}
 		},
 		null);
 
+	//腾讯云
+	Startup.on("cloud.tencent.com",
+		(context) => {
+			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			Global.inject(visual.Element);
+			Global.loadVue();
+			Global.loadElement();
+			let rightSide = document.getElementsByClassName('layout-side')[0];
+			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
+			let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
+			context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
+			visual.add(affix);
+			visual.add(drawer);
+		},
+		(context, win, plugins) => {
+			let visual = context.Visual;
+			const App = {
+				data() {
+					return {
+						RightDraw: false,
+						onRightOpen: function () {
+							Global.takeover(context.RightAside, document.getElementById('rightDrawerContainer'));
+						},
+					};
+				},
+			};
+			let app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
+			if (context.RightAside) {
+				app.$message.success("右侧栏收起");
+			}
+			else {
+				app.$message.warning("没有找到捏");
+			}
+		});
+
 	//StackOverflow
-	var StackOverFlowBefore = (context) => {
-		var visual = context.Visual = new UIElement('div', 'Feast-app', true);
+	let StackOverFlowBefore = (context) => {
+		let visual = context.Visual = new UIElement('div', 'Feast-app', true);
 		Global.inject(visual.Element);
 		Global.loadVue();
 		Global.loadElement();
-		var rightSide = document.getElementById('sidebar');
-		document.getElementById('mainbar').style.width = 'calc(100% - var(--su-static24))';
+		let rightSide = document.getElementById('sidebar');
+		document.getElementById('mainbar').style.width = 'calc(100% - let(--su-static24))';
 		let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
 		let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
-		var aside = context.RightAside = new UIElement('div');
-		aside.takeover(rightSide);
+		context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
 		visual.add(affix);
 		visual.add(drawer);
 	}
-	var StackOverFlowStart = (context, win, plugins) => {
-		var visual = context.Visual;
+	let StackOverFlowStart = (context, win, plugins) => {
+		let visual = context.Visual;
 		const App = {
-			mounted() {
-				LOG("挂载");
-			},
 			data() {
 				return {
 					RightDraw: false,
 					onRightOpen: function () {
-						var inner = document.getElementById('rightDrawerContainer');
-						var drawer = inner.parentElement;
+						let inner = document.getElementById('rightDrawerContainer');
+						let drawer = inner.parentElement;
 						drawer.style.marginTop = '50px';
 						drawer.style.marginBottom = '10px';
-						Global.takeover(context.RightAside.Element, inner);
+						Global.takeover(context.RightAside, inner);
 					},
 				};
 			},
-			methods: {
-			}
 		};
-		const app = plugins.Vue.createApp(App);
-		app.use(plugins.ElementPlus);
-		app.$message = plugins.ElementPlus.ElMessage;
-		app.mount(visual.Element);
-		visual.show();
+		Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
 	}
 	Startup.on("stackoverflow.com", StackOverFlowBefore, StackOverFlowStart);
 	Startup.on("stackoverflow.org.cn", StackOverFlowBefore, StackOverFlowStart);
@@ -290,35 +328,25 @@
 			let rightSide = document.querySelector('aside');
 			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
 			let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
-			var aside = context.RightAside = new UIElement('div');
-			aside.takeover(rightSide);
+			context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
 			document.querySelector('[role=main]').childNodes[0].style.width = '100%'
 			visual.add(affix);
 			visual.add(drawer);
 		},
 		(context, win, plugins) => {
-			var visual = context.Visual;
+			let visual = context.Visual;
 			const App = {
-				mounted() {
-					LOG("挂载");
-				},
 				data() {
 					return {
 						RightDraw: false,
 						onRightOpen: function () {
-							var inner = document.getElementById('rightDrawerContainer');
-							Global.takeover(context.RightAside.Element, inner);
+							let inner = document.getElementById('rightDrawerContainer');
+							Global.takeover(context.RightAside, inner);
 						},
 					};
 				},
-				methods: {
-				}
 			};
-			const app = plugins.Vue.createApp(App);
-			app.use(plugins.ElementPlus);
-			app.$message = plugins.ElementPlus.ElMessage;
-			app.mount(visual.Element);
-			visual.show();
+			Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
 		});
 
 	//码农家园
@@ -328,15 +356,11 @@
 	//百度文库
 	Startup.on("wenku.baidu.com",
 		(context) => {
-			var visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
-			var ASIDE = new UIElement('aside');
-			let aside = document.getElementById('app-right');
-			ASIDE.Element.style.width = aside.clientWidth;
-			ASIDE.takeover(aside);
-			context.Aside = ASIDE.Element;
+			context.Aside = Template.Wrapper('aside', document.getElementById('app-right'), 'takeover');
 			let main = document.getElementsByClassName('center-wrapper')[0];
 			main.style.width = 'calc(100% - 280px)';
 			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '90px'; });
@@ -345,7 +369,7 @@
 			visual.add(drawer);
 		},
 		(context, win, plugins) => {
-			var visual = context.Visual;
+			let visual = context.Visual;
 			const App = {
 				mounted() {
 					LOG("挂载");
@@ -361,11 +385,7 @@
 				methods: {
 				}
 			};
-			const app = plugins.Vue.createApp(App);
-			app.use(plugins.ElementPlus);
-			app.$message = plugins.ElementPlus.ElMessage;
-			app.mount(visual.Element);
-			visual.show();
+			const app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
 			if (context.Aside) {
 				app.$message.success("右侧栏收起");
 			}
@@ -378,21 +398,21 @@
 	Startup.on("zhuanlan.zhihu.com",
 		(context) => {
 			let width = '80%';
-			for (var i = 0; i < document.styleSheets.length; i++) {
+			for (let i = 0; i < document.styleSheets.length; i++) {
 				document.styleSheets[i].insertRule('.Post-SideActions { right:calc(50vw - 700px) }', 0);
 				document.styleSheets[i].insertRule('.css-78p1r9 { max-width:' + width + ' }', 0);
 				document.styleSheets[i].insertRule('.Post-NormalMain .Post-Header { width:' + width + ' }', 0);
 				document.styleSheets[i].insertRule('.Post-NormalMain>div, .Post-NormalSub>div  { width:' + width + ' }', 0);
 			}
 
-			var interval = setInterval(() => {
+			let interval = setInterval(() => {
 				let targ = document.getElementsByClassName('Modal-wrapper')[0];
 				if (!targ) return;
 				clearInterval(interval);
 				document.getElementsByClassName('Modal-closeButton')[0].click();
 			}, 10);
 
-			var interval2 = setInterval(() => {
+			let interval2 = setInterval(() => {
 				let targ = document.getElementsByClassName('css-1izy64v')[0];
 				if (!targ) return;
 				clearInterval(interval2);
@@ -401,7 +421,7 @@
 		});
 
 	//在以上区域编写
-	var config = Startup.BoostConfigs[href];
+	let config = Startup.BoostConfigs[href];
 	window.onload = () => {
 		Startup.PluginEvents.forEach(x => { x(window); });
 		Startup.PreloadEvents.forEach(x => { x(window, Global.Plugins); });
