@@ -11,6 +11,7 @@
 // @match  		 https://www.jianshu.com/*
 // @match        https://www.codenong.com/*
 // @match        https://wenku.baidu.com/*
+// @match        https://zhuanlan.zhihu.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
 // @grant        none
@@ -151,7 +152,7 @@
 	const href = window.location.host;
 
 	//TODO:在此开始编写
-	
+
 	//CSDN
 	Startup.on("blog.csdn.net",
 		(context) => {
@@ -198,7 +199,7 @@
 			app.$message = plugins.ElementPlus.ElMessage;
 			app.mount(visual.Element);
 			visual.show();
-			context.setClickable(()=>{ app.$message.success('复制成功'); });
+			context.setClickable(() => { app.$message.success('复制成功'); });
 			if (context.Aside) {
 				app.$message.success("左边栏收起了噢");
 			}
@@ -206,29 +207,29 @@
 				app.$message.warning("没有找到捏");
 			}
 		},
-		{ 
-			 setClickable:(Alert) => {
+		{
+			setClickable: (Alert) => {
 				var hs = document.getElementsByClassName('hljs-button signin');
-				for(let i = 0; i<hs.length; i++){
-					hs.item(i).onclick = () => { 
+				for (let i = 0; i < hs.length; i++) {
+					hs.item(i).onclick = () => {
 						window.hljs.copyCode(event);
-						if(Alert){
+						if (Alert) {
 							Alert();
 						}
-					 };
-					hs.item(i).setAttribute('data-title',"尽情的复制吧");
+					};
+					hs.item(i).setAttribute('data-title', "尽情的复制吧");
 				}
-				document.querySelectorAll('code').forEach( x => {
+				document.querySelectorAll('code').forEach(x => {
 					x.style.userSelect = "text";
 				});
-			} 
+			}
 		});
 
 	//qq外链
 	Startup.on("c.pc.qq.com",
 		(context) => {
 			var link = new URL(window.location.href).searchParams.get('pfurl');
-			if(link){
+			if (link) {
 				window.location.href = link;
 			}
 		},
@@ -281,53 +282,53 @@
 
 	//简书
 	Startup.on("www.jianshu.com",
-	(context)=>{
-		Global.loadVue();
-		Global.loadElement();
-		let visual = context.Visual = new UIElement('div', 'Feast-app', true);
-		Global.inject(visual.Element);
-		let rightSide = document.querySelector('aside');
-		let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
-		let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
-		var aside = context.RightAside = new UIElement('div');
-		aside.takeover(rightSide);
-		document.querySelector('[role=main]').childNodes[0].style.width = '100%'
-		visual.add(affix);
-		visual.add(drawer);
-	},
-	(context,win,plugins)=>{
-		var visual = context.Visual;
-		const App = {
-			mounted() {
-				LOG("挂载");
-			},
-			data() {
-				return {
-					RightDraw: false,
-					onRightOpen: function () {
-						var inner = document.getElementById('rightDrawerContainer');
-						Global.takeover(context.RightAside.Element, inner);
-					},
-				};
-			},
-			methods: {
-			}
-		};
-		const app = plugins.Vue.createApp(App);
-		app.use(plugins.ElementPlus);
-		app.$message = plugins.ElementPlus.ElMessage;
-		app.mount(visual.Element);
-		visual.show();
-	});
+		(context) => {
+			Global.loadVue();
+			Global.loadElement();
+			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			Global.inject(visual.Element);
+			let rightSide = document.querySelector('aside');
+			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
+			let drawer = Template.Drawer('rightDrawerContainer', rightSide.clientWidth + 50, 'rtl', 'RightDraw', 'onRightOpen');
+			var aside = context.RightAside = new UIElement('div');
+			aside.takeover(rightSide);
+			document.querySelector('[role=main]').childNodes[0].style.width = '100%'
+			visual.add(affix);
+			visual.add(drawer);
+		},
+		(context, win, plugins) => {
+			var visual = context.Visual;
+			const App = {
+				mounted() {
+					LOG("挂载");
+				},
+				data() {
+					return {
+						RightDraw: false,
+						onRightOpen: function () {
+							var inner = document.getElementById('rightDrawerContainer');
+							Global.takeover(context.RightAside.Element, inner);
+						},
+					};
+				},
+				methods: {
+				}
+			};
+			const app = plugins.Vue.createApp(App);
+			app.use(plugins.ElementPlus);
+			app.$message = plugins.ElementPlus.ElMessage;
+			app.mount(visual.Element);
+			visual.show();
+		});
 
 	//码农家园
 	Startup.on("www.codenong.com",
-	(context)=>{ document.getElementById('primary').style.width = '100%'; });
+		(context) => { document.getElementById('primary').style.width = '100%'; });
 
 	//百度文库
 	Startup.on("wenku.baidu.com",
-	(context)=>{
-		var visual = context.Visual = new UIElement('div', 'Feast-app', true);
+		(context) => {
+			var visual = context.Visual = new UIElement('div', 'Feast-app', true);
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
@@ -342,9 +343,9 @@
 			let drawer = Template.Drawer("rightDrawerContainer", context.Aside.style.width + 50, 'rtl', 'RightDraw', 'onRightOpen');
 			visual.add(affix);
 			visual.add(drawer);
-	},
-	(context,win,plugins)=>{
-		var visual = context.Visual;
+		},
+		(context, win, plugins) => {
+			var visual = context.Visual;
 			const App = {
 				mounted() {
 					LOG("挂载");
@@ -371,8 +372,33 @@
 			else {
 				app.$message.warning("没有找到捏");
 			}
-	});
+		});
 
+	//知乎
+	Startup.on("zhuanlan.zhihu.com",
+		(context) => {
+			let width = '80%';
+			for (var i = 0; i < document.styleSheets.length; i++) {
+				document.styleSheets[i].insertRule('.Post-SideActions { right:calc(50vw - 700px) }', 0);
+				document.styleSheets[i].insertRule('.css-78p1r9 { max-width:' + width + ' }', 0);
+				document.styleSheets[i].insertRule('.Post-NormalMain .Post-Header { width:' + width + ' }', 0);
+				document.styleSheets[i].insertRule('.Post-NormalMain>div, .Post-NormalSub>div  { width:' + width + ' }', 0);
+			}
+
+			var interval = setInterval(() => {
+				let targ = document.getElementsByClassName('Modal-wrapper')[0];
+				if (!targ) return;
+				clearInterval(interval);
+				document.getElementsByClassName('Modal-closeButton')[0].click();
+			}, 10);
+
+			var interval2 = setInterval(() => {
+				let targ = document.getElementsByClassName('css-1izy64v')[0];
+				if (!targ) return;
+				clearInterval(interval2);
+				targ.parentElement.removeChild(targ);
+			}, 10);
+		});
 
 	//在以上区域编写
 	var config = Startup.BoostConfigs[href];
