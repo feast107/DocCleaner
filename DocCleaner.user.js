@@ -22,10 +22,20 @@
 	'use strict';
 	//全局函数
 	const Global = {
+		/**
+		 * 由to接管from自身
+		 * @param {Object} from 被接管的元素
+		 * @param {Object} to 接管的元素
+		 */
 		takeover: function (from, to) {
 			from.parentElement?.removeChild(from);
 			to.appendChild(from);
 		},
+		/**
+		 * 由to接管from的子元素
+		 * @param {Object} from 被接管的容器
+		 * @param {Object} to 接管的元素
+		 */
 		grab: function (from, to) {
 			let childs = [];
 			from.childNodes.forEach(x => childs.push(x));
@@ -34,6 +44,11 @@
 				to.appendChild(x)
 			});
 		},
+		/**
+		 * 加载插件
+		 * @param {String} src 插件url
+		 * @param {{Name:String,onPlugin:Function}} option 插件选项
+		 */
 		script: function (src, option) {
 			let script = document.createElement('script');
 			script.setAttribute('type', 'text/javascript');
@@ -99,6 +114,14 @@
 		PreloadEvents: [],
 		BoostConfigs: {},
 		AfterloadEvents: [],
+		/**
+		 * 注册启动事件
+		 * @param {String} url 启动地址
+		 * @param {Function} before 预加载事件
+		 * @param {Function} start 主事件
+		 * @param {Object|null} context 预置或默认生成的上下文
+		 * @returns void
+		 */
 		on: function (url, before, start, context) {
 			if (typeof (url) != "string") { return; }
 			if (typeof (before) != "function") { before = () => { }; }
@@ -106,12 +129,24 @@
 			if (!context) { context = {} };
 			this.BoostConfigs[url] = { Context: context, OnBefore: before, OnStart: start }
 		},
+		/**
+		 * 注册加载完成的事件
+		 * @param {Function} loadEvent 
+		 */
 		onLoad: function (loadEvent) {
 			this.PreloadEvents.push(loadEvent);
 		},
+		/**
+		 * 插件加载完成的事件
+		 * @param {Function} loadEvent 
+		 */
 		onPlugin: function (loadEvent) {
 			this.PluginEvents.push(loadEvent);
 		},
+		/**
+		 * 加载完成后的事件
+		 * @param {Function} loadEvent 
+		 */
 		afterLoad: function (loadEvent) {
 			this.AfterloadEvents.push(loadEvent);
 		}
@@ -119,6 +154,14 @@
 	Object.freeze(Startup);
 	//控件模板
 	const Template = {
+		/**
+		 * 创建一个 ElementPlus 的 el-affix
+		 * @param {String} id 控件的id
+		 * @param {Number} offset 控件的垂直偏移
+		 * @param {String} viewModel 绑定的vm(data:{...})
+		 * @param {Function} modify 后处理
+		 * @returns 元素
+		 */
 		Affix: function (id, offset, viewModel, modify) {
 			let ret = new UIElement('el-affix', id).Element;
 			ret.setAttribute(':offset', offset);
@@ -130,12 +173,21 @@
 			button.style = 'padding:20px';
 			ret.appendChild(button);
 			if (modify) {
-				Startup.afterLoad((win, plugs) => {
+				Startup.afterLoad((win, plugins) => {
 					modify(win.document.getElementById(id).childNodes[0]);
 				})
 			}
 			return ret;
 		},
+		/**
+		 * 创建一个 ElementPlus 的 el-drawer
+		 * @param {String} id 控件的id
+		 * @param {Number} width 控件的宽度
+		 * @param {String} direction 控件展开方向
+		 * @param {String} viewModel 绑定的vm
+		 * @param {String} openEventName el-drawer的加载事件名
+		 * @returns 元素
+		 */
 		Drawer: function (id, width, direction, viewModel, openEventName) {
 			let inner = new UIElement('div');
 			inner.Element.id = id;
@@ -148,6 +200,14 @@
 			ret.appendChild(inner.Element);
 			return ret;
 		},
+		/**
+		 * 快速创建一个接管容器
+		 * @param {String} tag 容器标签
+		 * @param {Object} victim 被接管的元素
+		 * @param {String} mode 接管模式(takeover/grab)
+		 * @param {Function} afterCreate 后处理
+		 * @returns 元素
+		 */
 		Wrapper: function (tag, victim, mode, afterCreate) {
 			let ret = new UIElement(tag);
 			ret.Element.style.width = victim.clientWidth + 'px';
@@ -162,6 +222,14 @@
 			}
 			return ret.Element;
 		},
+		/**
+		 * 从配置的App中创建app
+		 * @param {Object} configure Vue配置的App
+		 * @param {Object} plugins Global.plugins
+		 * @param {Object} mount 挂载在界面上的元素
+		 * @param {Function} after 后处理
+		 * @returns 创建完的app
+		 */
 		CreateApp: function (configure, plugins, mount, after) {
 			if (!plugins.Vue) return;
 			let ret = plugins.Vue.createApp(configure);
