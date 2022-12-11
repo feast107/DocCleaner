@@ -7,9 +7,9 @@
 // @match        https://blog.csdn.net/*
 // @match        https://c.pc.qq.com/*
 // @match        https://cloud.tencent.com/*
-// @match  		 https://stackoverflow.com/*
-// @match  		 https://stackoverflow.org.cn/*
-// @match  		 https://www.jianshu.com/*
+// @match        https://stackoverflow.com/*
+// @match        https://stackoverflow.org.cn/*
+// @match        https://www.jianshu.com/*
 // @match        https://www.codenong.com/*
 // @match        https://wenku.baidu.com/*
 // @match        https://zhuanlan.zhihu.com/*
