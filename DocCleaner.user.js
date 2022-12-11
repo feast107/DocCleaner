@@ -10,6 +10,7 @@
 // @match  		 https://stackoverflow.org.cn/*
 // @match  		 https://www.jianshu.com/*
 // @match        https://www.codenong.com/*
+// @match        https://wenku.baidu.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
 // @grant        none
@@ -183,7 +184,6 @@
 				},
 				data() {
 					return {
-						message: "",
 						draw: false,
 						onOpen: function () {
 							Global.takeover(context.Aside, document.getElementById('drawerContainer'));
@@ -323,6 +323,55 @@
 	//码农家园
 	Startup.on("www.codenong.com",
 	(context)=>{ document.getElementById('primary').style.width = '100%'; });
+
+	//百度文库
+	Startup.on("wenku.baidu.com",
+	(context)=>{
+		var visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			Global.inject(visual.Element);
+			Global.loadVue();
+			Global.loadElement();
+			var ASIDE = new UIElement('aside');
+			let aside = document.getElementById('app-right');
+			ASIDE.Element.style.width = aside.clientWidth;
+			ASIDE.takeover(aside);
+			context.Aside = ASIDE.Element;
+			let main = document.getElementsByClassName('center-wrapper')[0];
+			main.style.width = 'calc(100% - 280px)';
+			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '90px'; });
+			let drawer = Template.Drawer("rightDrawerContainer", context.Aside.style.width + 50, 'rtl', 'RightDraw', 'onRightOpen');
+			visual.add(affix);
+			visual.add(drawer);
+	},
+	(context,win,plugins)=>{
+		var visual = context.Visual;
+			const App = {
+				mounted() {
+					LOG("挂载");
+				},
+				data() {
+					return {
+						RightDraw: false,
+						onRightOpen: function () {
+							Global.takeover(context.Aside, document.getElementById('rightDrawerContainer'));
+						},
+					};
+				},
+				methods: {
+				}
+			};
+			const app = plugins.Vue.createApp(App);
+			app.use(plugins.ElementPlus);
+			app.$message = plugins.ElementPlus.ElMessage;
+			app.mount(visual.Element);
+			visual.show();
+			if (context.Aside) {
+				app.$message.success("右侧栏收起");
+			}
+			else {
+				app.$message.warning("没有找到捏");
+			}
+	});
 
 
 	//在以上区域编写

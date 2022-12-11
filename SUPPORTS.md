@@ -15,5 +15,9 @@
 
 ## [码农家园](https://www.codenong.com)
 + 宽度扩展
+
+## [百度文库](https://wenku.baidu.com)
++ 收起右侧广告(收起之后原有的广告加载不出来了，百度这前端不好讲)
+
 ---
 # 也许，你想[返回](README.md)?
