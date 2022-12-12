@@ -22,6 +22,11 @@
 ## [百度文库](https://wenku.baidu.com)
 + 收起右侧广告(收起之后原有的广告加载不出来了，百度这前端不好讲)
 
+## [知乎](https://www.zhihu.com/)
++ 收起右侧栏
++ 关闭未登录提示
+>**需要安装并启用 [CSP-Disable](https://github.com/PhilGrayson/chrome-csp-disable) 插件** 
+
 ## [知乎专栏](https://zhuanlan.zhihu.com)
 + 宽度扩展
 + 关闭未登录提示
