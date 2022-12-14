@@ -13,6 +13,7 @@
 	// @match        https://www.codenong.com/*
 	// @match        https://wenku.baidu.com/*
 	// @match        https://zhuanlan.zhihu.com/*
+	// @match        https://link.zhihu.com/*
 	// @match        https://www.zhihu.com/*
 	// @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 	// @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
@@ -293,7 +294,7 @@
 				visual.add(affix);
 				visual.add(drawer);
 			},
-			(context, win, plugins) => {
+			(context, _, plugins) => {
 				let visual = context.Visual;
 				const App = {
 					data() {
@@ -334,7 +335,7 @@
 
 		//qq外链
 		Startup.on("c.pc.qq.com",
-			(context) => {
+			(_) => {
 				let link = new URL(window.location.href).searchParams.get('pfurl');
 				if (link) {
 					window.location.href = link;
@@ -356,7 +357,7 @@
 				visual.add(affix);
 				visual.add(drawer);
 			},
-			(context, win, plugins) => {
+			(context, _, plugins) => {
 				let visual = context.Visual;
 				const App = {
 					data() {
@@ -391,7 +392,7 @@
 			visual.add(affix);
 			visual.add(drawer);
 		}
-		let StackOverFlowStart = (context, win, plugins) => {
+		let StackOverFlowStart = (context, _, plugins) => {
 			let visual = context.Visual;
 			const App = {
 				data() {
@@ -427,7 +428,7 @@
 				visual.add(affix);
 				visual.add(drawer);
 			},
-			(context, win, plugins) => {
+			(context, _, plugins) => {
 				let visual = context.Visual;
 				const App = {
 					data() {
@@ -445,7 +446,7 @@
 
 		//码农家园
 		Startup.on("www.codenong.com",
-			(context) => { document.getElementById('primary').style.width = '100%'; });
+			(_) => { document.getElementById('primary').style.width = '100%'; });
 
 		//百度文库
 		Startup.on("wenku.baidu.com",
@@ -462,7 +463,7 @@
 				visual.add(affix);
 				visual.add(drawer);
 			},
-			(context, win, plugins) => {
+			(context, _, plugins) => {
 				let visual = context.Visual;
 				const App = {
 					mounted() {
@@ -524,7 +525,7 @@
 				visual.add(drawer);
 				Global.insertCss(['.Question-mainColumn { width:100% }'], document);
 			}, 
-			(context,win,plugins) => {
+			(context,_,plugins) => {
 				let visual = context.Visual;
 				const App = {
 					data() {
@@ -558,7 +559,14 @@
 				context.closeSign();
 				context.closeBottom();
 			}, null, zhihuContext);
-
+		//知乎外链引导页面
+		Startup.on("link.zhihu.com",
+		(_)=>{ 
+			let link = new URL(window.location.href).searchParams.get('target'); 
+			if(link){
+				window.location.href = link;
+			}
+		});
 
 		//在以上区域编写
 		let config = Startup.BoostConfigs[href];
