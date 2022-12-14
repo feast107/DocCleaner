@@ -40,7 +40,7 @@ Startup.on(url:String,//启动地址
 
 ## 插件
 加载插件
-``` ts
+``` js
 Global.script(url:String,//插件地址
                 option:{
                     Name:String,//插件名称
