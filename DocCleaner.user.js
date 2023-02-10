@@ -92,6 +92,10 @@
 				{ Name: 'ElementPlus', onPlugin: handler });
 			this.css("https://unpkg.com/element-plus/dist/index.css");
 		},
+		loadSignalR: function (handler) {
+			this.script("https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.2/signalr.min.js",
+			{ Name: 'signalR' , onPlugin:handler });
+		},
 		inject: function (Element) {
 			let childs = [];
 			document.body.childNodes.forEach(x => childs.push(x));
