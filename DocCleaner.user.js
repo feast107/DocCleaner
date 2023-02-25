@@ -16,13 +16,14 @@
 // @match        https://zhuanlan.zhihu.com/*
 // @match        https://link.zhihu.com/*
 // @match        https://www.zhihu.com/*
+// @match		 https://www.aliyunjc.net/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=stackoverflow.com
 // @require      https://cdn.staticfile.org/jquery/3.4.1/jquery.min.js
 // @grant        none
 // ==/UserScript==
 
 (function () {
-	'use strict';
+	"use strict";
 	//全局函数
 	const Global = {
 		/**
@@ -41,10 +42,10 @@
 		 */
 		grab: function (from, to) {
 			let childs = [];
-			from.childNodes.forEach(x => childs.push(x));
-			childs.forEach(x => {
+			from.childNodes.forEach((x) => childs.push(x));
+			childs.forEach((x) => {
 				from.removeChild(x);
-				to.appendChild(x)
+				to.appendChild(x);
 			});
 		},
 		/**
@@ -53,15 +54,15 @@
 		 * @param {{Name:String,onPlugin:Function}} option 插件选项
 		 */
 		script: function (src, option) {
-			let script = document.createElement('script');
-			script.setAttribute('type', 'text/javascript');
+			let script = document.createElement("script");
+			script.setAttribute("type", "text/javascript");
 			script.src = src;
 			document.head.appendChild(script);
 			if (option) {
 				if (option.Name && !this.Plugins[option.Name]) {
 					this.Plugins[option.Name] = {};
 					Startup.onPlugin((win) => {
-						let plugin = this.Plugins[option.Name] = win[option.Name];
+						let plugin = (this.Plugins[option.Name] = win[option.Name]);
 						if (option.onPlugin) {
 							option.onPlugin(plugin);
 						}
@@ -70,48 +71,60 @@
 			}
 		},
 		css: function (src) {
-			let link = document.createElement('link');
-			link.setAttribute('rel', 'stylesheet');
+			let link = document.createElement("link");
+			link.setAttribute("rel", "stylesheet");
 			link.href = src;
 			document.head.appendChild(link);
 		},
 		addCSP: function () {
-			let meta = document.createElement('meta');
-			meta.setAttribute('content', "script-src  cdn.jsdelivr.net; object-src 'self'; style-src 'self' 'unsafe-inline'; media-src *");
-			meta.setAttribute('http-equiv', "Content-Security-Policy");
+			let meta = document.createElement("meta");
+			meta.setAttribute(
+				"content",
+				"script-src  cdn.jsdelivr.net; object-src 'self'; style-src 'self' 'unsafe-inline'; media-src *"
+			);
+			meta.setAttribute("http-equiv", "Content-Security-Policy");
 			document.head.appendChild(meta);
 		},
 		loadVue: function (handler) {
 			//https://cdn.jsdelivr.net/npm/vue@next 用以获取最新的js
-			this.script("https://cdn.jsdelivr.net/npm/vue@3.2.36/dist/vue.global.min.js",
-				{ Name: 'Vue', onPlugin: handler });
+			this.script(
+				"https://cdn.jsdelivr.net/npm/vue@3.2.36/dist/vue.global.min.js",
+				{ Name: "Vue", onPlugin: handler }
+			);
 		},
 		loadElement: function (handler) {
 			//https://unpkg.com/element-plus 用以获取最新的js
-			this.script("https://unpkg.com/element-plus@2.2.22/dist/index.full.min.js",
-				{ Name: 'ElementPlus', onPlugin: handler });
+			this.script(
+				"https://unpkg.com/element-plus@2.2.22/dist/index.full.min.js",
+				{ Name: "ElementPlus", onPlugin: handler }
+			);
 			this.css("https://unpkg.com/element-plus/dist/index.css");
 		},
 		loadSignalR: function (handler) {
-			this.script("https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.2/signalr.min.js",
-			{ Name: 'signalR' , onPlugin:handler });
+			this.script(
+				"https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.2/signalr.min.js",
+				{ Name: "signalR", onPlugin: handler }
+			);
 		},
 		inject: function (Element) {
 			let childs = [];
-			document.body.childNodes.forEach(x => childs.push(x));
-			childs.forEach(x => document.body.removeChild(x));
+			document.body.childNodes.forEach((x) => childs.push(x));
+			childs.forEach((x) => document.body.removeChild(x));
 			document.body.appendChild(Element);
-			childs.forEach(x => document.body.appendChild(x));
+			childs.forEach((x) => document.body.appendChild(x));
 		},
 		insertCss: function (rules, doc) {
-			if (!doc) { doc = document; }
+			if (!doc) {
+				doc = document;
+			}
 			new Promise((res, rej) => {
 				for (let i = 0; i < doc.styleSheets.length; i++) {
-					rules.forEach(rule => {
+					rules.forEach((rule) => {
 						try {
-							if (typeof (rule) == 'string') doc.styleSheets[i].insertRule(rule, 0);
-						} catch (error) { }
-					})
+							if (typeof rule == "string")
+								doc.styleSheets[i].insertRule(rule, 0);
+						} catch (error) {}
+					});
 				}
 				res();
 			});
@@ -120,26 +133,85 @@
 			if (!win) {
 				win = window;
 			}
-			Object.keys(this).forEach(key => { win[key] = this[key]; });
+			Object.keys(this).forEach((key) => {
+				win[key] = this[key];
+			});
+		},
+		/**
+		 * 合成
+		 * @param {object} self
+		 * @param {object} from
+		 */
+		merge(self, from) {
+			if (!from) return;
+			Object.keys(from).forEach((key) => {
+				var tmp = from[key];
+				if (!self[key]) {
+					self[key] = tmp;
+				} else if (typeof self[key] == typeof tmp) {
+					if (tmp.forEach) {
+						tmp.forEach((v) => {
+							if (self[key].push) {
+								self[key].push(v);
+							}
+						});
+					} else if (typeof self[key] == "object") {
+						this.merge(self[key], tmp);
+					} else {
+						self[key] = tmp;
+					}
+				}
+			});
 		},
 		Plugins: {},
-	}
+	};
 	Object.freeze(Global);
 	class UIElement {
 		constructor(tag, id, hidden) {
-			let ele = this.Container = this.Element = document.createElement(tag);
-			if (id) { ele.id = id; }
-			if (hidden) { ele.style.display = 'none'; }
+			let ele = (this.Container = this.Element = document.createElement(tag));
+			if (id) {
+				ele.id = id;
+			}
+			if (hidden) {
+				ele.style.display = "none";
+			}
 		}
 		Element = null;
 		Container = null;
-		show = function () { this.Element.style.display = ""; }
-		hide = function () { this.Element.style.display = "none"; }
-		add = function (Element) { this.Element.appendChild(Element); };
-		remove = function (Element) { this.Element.removeChild(Element); };
-		takeover = function (target) { Global.takeover(target, this.Container); }
-		grab = function (target) { Global.grab(target, this.Container); }
-	};
+		show = function () {
+			this.Element.style.display = "";
+		};
+		hide = function () {
+			this.Element.style.display = "none";
+		};
+		add = function (Element) {
+			this.Element.appendChild(Element);
+		};
+		remove = function (Element) {
+			this.Element.removeChild(Element);
+		};
+		takeover = function (target) {
+			Global.takeover(target, this.Container);
+		};
+		grab = function (target) {
+			Global.grab(target, this.Container);
+		};
+	}
+	class Setter {
+		constructor() {
+			this.innerText = null;
+			this.attributes = {};
+			this.style = null;
+		}
+		/**
+		 * 拷贝自
+		 * @param {Setter} other
+		 */
+		from(other) {
+			Global.merge(this, other);
+		}
+	}
+
 	//启动项 Startup.on( url, BeforeEvent(context) ，StartEvent(context,window,plugins) , context = null )
 	const Startup = {
 		PluginEvents: [],
@@ -155,34 +227,46 @@
 		 * @returns void
 		 */
 		on: function (url, before, start, context) {
-			if (typeof (url) != "string") { return; }
-			if (typeof (before) != "function") { before = () => { }; }
-			if (typeof (start) != "function") { start = () => { }; }
-			if (!context) { context = {} };
-			this.BoostConfigs[url] = { Context: context, OnBefore: before, OnStart: start }
+			if (typeof url != "string") {
+				return;
+			}
+			if (typeof before != "function") {
+				before = () => {};
+			}
+			if (typeof start != "function") {
+				start = () => {};
+			}
+			if (!context) {
+				context = {};
+			}
+			this.BoostConfigs[url] = {
+				Context: context,
+				OnBefore: before,
+				OnStart: start,
+			};
 		},
 		/**
 		 * 注册加载完成的事件
-		 * @param {Function} loadEvent 
+		 * @param {Function} loadEvent
 		 */
 		onLoad: function (loadEvent) {
 			this.PreloadEvents.push(loadEvent);
 		},
 		/**
 		 * 插件加载完成的事件
-		 * @param {Function} loadEvent 
+		 * @param {Function} loadEvent
 		 */
 		onPlugin: function (loadEvent) {
 			this.PluginEvents.push(loadEvent);
 		},
 		/**
 		 * 加载完成后的事件
-		 * @param {Function} loadEvent 
+		 * @param {Function} loadEvent
 		 */
 		afterLoad: function (loadEvent) {
 			this.AfterloadEvents.push(loadEvent);
-		}
-	}
+		},
+	};
 	Object.freeze(Startup);
 	//控件模板
 	const Template = {
@@ -192,22 +276,38 @@
 		 * @param {Number} offset 控件的垂直偏移
 		 * @param {String} viewModel 绑定的vm(data:{...})
 		 * @param {Function} modify 后处理
+		 * @param {Setter} buttonSetter 按钮设置
 		 * @returns 元素
 		 */
-		Affix: function (id, offset, viewModel, modify) {
-			let ret = new UIElement('el-affix', id).Element;
-			ret.setAttribute(':offset', offset);
-			let button = new UIElement('el-button').Element;
-			button.type = "primary";
-			button.innerText = "展开";
-			button.setAttribute(':style', "{ boxShadow:'let(--el-box-shadow-dark)' }");
-			button.setAttribute('v-on:click', '() => ' + viewModel + ' = true');
-			button.style = 'padding:20px';
+		Affix: function (id, offset, viewModel, modify, buttonSetter) {
+			let defaultSetter = {
+				innerText: "展开",
+				attributes: {
+					plain: "",
+					type: "primary",
+					"v-on:click": `()=> ${viewModel} = true`,
+					":style": "{ boxShadow:'var(--el-box-shadow-dark)' }",
+				},
+				style: "padding:20px",
+			};
+			Global.merge(defaultSetter, buttonSetter);
+			let ret = new UIElement("el-affix", id).Element;
+			ret.setAttribute(":offset", offset);
+			let button = new UIElement("el-button").Element;
+			Object.keys(defaultSetter).forEach((k) => {
+				if (k == "attributes") {
+					Object.keys(defaultSetter.attributes).forEach((key) => {
+						button.setAttribute(key, defaultSetter.attributes[key]);
+					});
+				} else {
+					button[k] = defaultSetter[k];
+				}
+			});
 			ret.appendChild(button);
 			if (modify) {
 				Startup.afterLoad((win, plugins) => {
 					modify(win.document.getElementById(id).childNodes[0]);
-				})
+				});
 			}
 			return ret;
 		},
@@ -221,14 +321,14 @@
 		 * @returns 元素
 		 */
 		Drawer: function (id, direction, viewModel, openEventName) {
-			let inner = new UIElement('div');
+			let inner = new UIElement("div");
 			inner.Element.id = id;
-			let ret = new UIElement('el-drawer').Element;
-			ret.setAttribute('size', 'auto');
-			ret.setAttribute(':with-header', false);
-			ret.setAttribute('direction', direction);
-			ret.setAttribute('v-model', viewModel);
-			ret.setAttribute('v-on:open', '() => ' + openEventName + '()');
+			let ret = new UIElement("el-drawer").Element;
+			ret.setAttribute("size", "auto");
+			ret.setAttribute(":with-header", false);
+			ret.setAttribute("direction", direction);
+			ret.setAttribute("v-model", viewModel);
+			ret.setAttribute("v-on:open", "() => " + openEventName + "()");
 			ret.appendChild(inner.Element);
 			return ret;
 		},
@@ -242,12 +342,14 @@
 		 */
 		Wrapper: function (tag, victim, mode, afterCreate) {
 			let ret = new UIElement(tag);
-			ret.Element.style.width = victim.clientWidth + 'px';
+			ret.Element.style.width = victim.clientWidth + "px";
 			switch (mode) {
-				case 'takeover':
-					ret.takeover(victim); break;
-				case 'grab':
-					ret.grab(victim); break;
+				case "takeover":
+					ret.takeover(victim);
+					break;
+				case "grab":
+					ret.grab(victim);
+					break;
 			}
 			if (afterCreate) {
 				afterCreate(ret.Element);
@@ -272,20 +374,24 @@
 			if (mount) {
 				ret.mount(mount);
 			}
-			if (after) { after(ret); }
+			if (after) {
+				after(ret);
+			}
 			return ret;
-		}
+		},
 	};
-	const LOG = (l) => { console.log(l); };
+	const LOG = (l) => {
+		console.log(l);
+	};
 	const href = window.location.host;
 
 	//TODO:在此开始编写
 
-
 	//CSDN
-	Startup.on("blog.csdn.net",
+	Startup.on(
+		"blog.csdn.net",
 		(context) => {
-			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
@@ -293,10 +399,12 @@
 			window.$(window).unbind();
 			let main = document.getElementById("mainBox");
 			let aside = main.childNodes[5];
-			context.Aside = Template.Wrapper('aside', aside, 'grab');
+			context.Aside = Template.Wrapper("aside", aside, "grab");
 			main.childNodes[3].style.width = "100%";
-			let affix = Template.Affix('affix', 120, 'draw', (a) => { a.style.left = '30px'; });
-			let drawer = Template.Drawer("drawerContainer", 'ltr', 'draw', 'onOpen');
+			let affix = Template.Affix("affix", 120, "draw", (a) => {
+				a.style.left = "30px";
+			});
+			let drawer = Template.Drawer("drawerContainer", "ltr", "draw", "onOpen");
 			visual.add(affix);
 			visual.add(drawer);
 		},
@@ -307,23 +415,29 @@
 					return {
 						draw: false,
 						onOpen: function () {
-							Global.takeover(context.Aside, document.getElementById('drawerContainer'));
+							Global.takeover(
+								context.Aside,
+								document.getElementById("drawerContainer")
+							);
 						},
 					};
 				},
 			};
-			const app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
-			context.setClickable(() => { app.$message.success('复制成功'); });
+			const app = Template.CreateApp(App, plugins, visual.Element, () => {
+				visual.show();
+			});
+			context.setClickable(() => {
+				app.$message.success("复制成功");
+			});
 			if (context.Aside) {
 				app.$message.success("左边栏收起了噢");
-			}
-			else {
+			} else {
 				app.$message.warning("没有找到捏");
 			}
 		},
 		{
 			setClickable: (Alert) => {
-				let hs = document.getElementsByClassName('hljs-button signin');
+				let hs = document.getElementsByClassName("hljs-button signin");
 				for (let i = 0; i < hs.length; i++) {
 					hs.item(i).onclick = () => {
 						window.hljs.copyCode(event);
@@ -331,44 +445,54 @@
 							Alert();
 						}
 					};
-					hs.item(i).setAttribute('data-title', "尽情的复制吧");
+					hs.item(i).setAttribute("data-title", "尽情的复制吧");
 				}
-				document.querySelectorAll('code').forEach(x => {
+				document.querySelectorAll("code").forEach((x) => {
 					x.style.userSelect = "text";
 				});
-			}
-		});
-	
+			},
+		}
+	);
+
 	//CSDN外链
-	Startup.on("link.csdn.net",
-		(_) => {
-			let link = new URL(window.location.href).searchParams.get('target');
-			if (link) {
-				window.location.href = link;
-			}
-		});
+	Startup.on("link.csdn.net", (_) => {
+		let link = new URL(window.location.href).searchParams.get("target");
+		if (link) {
+			window.location.href = link;
+		}
+	});
 
 	//qq外链
-	Startup.on("c.pc.qq.com",
+	Startup.on(
+		"c.pc.qq.com",
 		(_) => {
-			let link = new URL(window.location.href).searchParams.get('pfurl');
+			let link = new URL(window.location.href).searchParams.get("pfurl");
 			if (link) {
 				window.location.href = link;
 			}
 		},
-		null);
+		null
+	);
 
 	//腾讯云
-	Startup.on("cloud.tencent.com",
+	Startup.on(
+		"cloud.tencent.com",
 		(context) => {
-			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
-			let rightSide = document.getElementsByClassName('layout-side')[0];
-			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
-			let drawer = Template.Drawer('rightDrawerContainer', 'rtl', 'RightDraw', 'onRightOpen');
-			context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
+			let rightSide = document.getElementsByClassName("layout-side")[0];
+			let affix = Template.Affix("right-affix", 120, "RightDraw", (a) => {
+				a.style.right = "100px";
+			});
+			let drawer = Template.Drawer(
+				"rightDrawerContainer",
+				"rtl",
+				"RightDraw",
+				"onRightOpen"
+			);
+			context.RightAside = Template.Wrapper("aside", rightSide, "takeover");
 			visual.add(affix);
 			visual.add(drawer);
 		},
@@ -379,34 +503,47 @@
 					return {
 						RightDraw: false,
 						onRightOpen: function () {
-							Global.takeover(context.RightAside, document.getElementById('rightDrawerContainer'));
+							Global.takeover(
+								context.RightAside,
+								document.getElementById("rightDrawerContainer")
+							);
 						},
 					};
 				},
 			};
-			let app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
+			let app = Template.CreateApp(App, plugins, visual.Element, () => {
+				visual.show();
+			});
 			if (context.RightAside) {
 				app.$message.success("右侧栏收起");
-			}
-			else {
+			} else {
 				app.$message.warning("没有找到捏");
 			}
-		});
+		}
+	);
 
 	//StackOverflow
 	let StackOverFlowBefore = (context) => {
-		let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+		let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 		Global.inject(visual.Element);
 		Global.loadVue();
 		Global.loadElement();
-		let rightSide = document.getElementById('sidebar');
-		document.getElementById('mainbar').style.width = 'calc(100% - let(--su-static24))';
-		let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
-		let drawer = Template.Drawer('rightDrawerContainer', 'rtl', 'RightDraw', 'onRightOpen');
-		context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
+		let rightSide = document.getElementById("sidebar");
+		document.getElementById("mainbar").style.width =
+			"calc(100% - let(--su-static24))";
+		let affix = Template.Affix("right-affix", 120, "RightDraw", (a) => {
+			a.style.right = "100px";
+		});
+		let drawer = Template.Drawer(
+			"rightDrawerContainer",
+			"rtl",
+			"RightDraw",
+			"onRightOpen"
+		);
+		context.RightAside = Template.Wrapper("aside", rightSide, "takeover");
 		visual.add(affix);
 		visual.add(drawer);
-	}
+	};
 	let StackOverFlowStart = (context, _, plugins) => {
 		let visual = context.Visual;
 		const App = {
@@ -414,32 +551,42 @@
 				return {
 					RightDraw: false,
 					onRightOpen: function () {
-						let inner = document.getElementById('rightDrawerContainer');
+						let inner = document.getElementById("rightDrawerContainer");
 						let drawer = inner.parentElement;
-						drawer.style.marginTop = '50px';
-						drawer.style.marginBottom = '10px';
+						drawer.style.marginTop = "50px";
+						drawer.style.marginBottom = "10px";
 						Global.takeover(context.RightAside, inner);
 					},
 				};
 			},
 		};
-		Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
-	}
+		Template.CreateApp(App, plugins, visual.Element, () => {
+			visual.show();
+		});
+	};
 	Startup.on("stackoverflow.com", StackOverFlowBefore, StackOverFlowStart);
 	Startup.on("stackoverflow.org.cn", StackOverFlowBefore, StackOverFlowStart);
 
 	//简书
-	Startup.on("www.jianshu.com",
+	Startup.on(
+		"www.jianshu.com",
 		(context) => {
 			Global.loadVue();
 			Global.loadElement();
-			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 			Global.inject(visual.Element);
-			let rightSide = document.querySelector('aside');
-			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '100px'; });
-			let drawer = Template.Drawer('rightDrawerContainer', 'rtl', 'RightDraw', 'onRightOpen');
-			context.RightAside = Template.Wrapper('aside', rightSide, 'takeover');
-			document.querySelector('[role=main]').childNodes[0].style.width = '100%'
+			let rightSide = document.querySelector("aside");
+			let affix = Template.Affix("right-affix", 120, "RightDraw", (a) => {
+				a.style.right = "100px";
+			});
+			let drawer = Template.Drawer(
+				"rightDrawerContainer",
+				"rtl",
+				"RightDraw",
+				"onRightOpen"
+			);
+			context.RightAside = Template.Wrapper("aside", rightSide, "takeover");
+			document.querySelector("[role=main]").childNodes[0].style.width = "100%";
 			visual.add(affix);
 			visual.add(drawer);
 		},
@@ -450,95 +597,119 @@
 					return {
 						RightDraw: false,
 						onRightOpen: function () {
-							let inner = document.getElementById('rightDrawerContainer');
+							let inner = document.getElementById("rightDrawerContainer");
 							Global.takeover(context.RightAside, inner);
 						},
 					};
 				},
 			};
-			Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
-		});
+			Template.CreateApp(App, plugins, visual.Element, () => {
+				visual.show();
+			});
+		}
+	);
 
 	//码农家园
-	Startup.on("www.codenong.com",
-		(_) => { document.getElementById('primary').style.width = '100%'; });
+	Startup.on("www.codenong.com", (_) => {
+		document.getElementById("primary").style.width = "100%";
+	});
 
 	//百度文库
-	Startup.on("wenku.baidu.com",
+	Startup.on(
+		"wenku.baidu.com",
 		(context) => {
-			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
-			context.Aside = Template.Wrapper('aside', document.getElementById('app-right'), 'takeover');
-			let main = document.getElementsByClassName('center-wrapper')[0];
-			main.style.width = 'calc(100% - 280px)';
-			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '90px'; });
-			let drawer = Template.Drawer("rightDrawerContainer", 'rtl', 'RightDraw', 'onRightOpen');
+			context.Aside = Template.Wrapper(
+				"aside",
+				document.getElementById("app-right"),
+				"takeover"
+			);
+			let main = document.getElementsByClassName("center-wrapper")[0];
+			main.style.width = "calc(100% - 280px)";
+			let affix = Template.Affix("right-affix", 120, "RightDraw", (a) => {
+				a.style.right = "90px";
+			});
+			let drawer = Template.Drawer(
+				"rightDrawerContainer",
+				"rtl",
+				"RightDraw",
+				"onRightOpen"
+			);
 			visual.add(affix);
 			visual.add(drawer);
 		},
 		(context, _, plugins) => {
 			let visual = context.Visual;
 			const App = {
-				mounted() {
-					LOG("挂载");
-				},
 				data() {
 					return {
 						RightDraw: false,
 						onRightOpen: function () {
-							Global.takeover(context.Aside, document.getElementById('rightDrawerContainer'));
+							Global.takeover(
+								context.Aside,
+								document.getElementById("rightDrawerContainer")
+							);
 						},
 					};
 				},
-				methods: {
-				}
+				methods: {},
 			};
-			const app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
+			const app = Template.CreateApp(App, plugins, visual.Element, () => {
+				visual.show();
+			});
 			if (context.Aside) {
 				app.$message.success("右侧栏收起");
-			}
-			else {
+			} else {
 				app.$message.warning("没有找到捏");
 			}
-		});
-
+		}
+	);
 
 	let zhihuContext = {
 		closeSign: function () {
 			let interval = setInterval(() => {
-				let targ = document.getElementsByClassName('Modal-wrapper')[0];
+				let targ = document.getElementsByClassName("Modal-wrapper")[0];
 				if (!targ) return;
 				clearInterval(interval);
-				document.getElementsByClassName('Modal-closeButton')[0].click();
+				document.getElementsByClassName("Modal-closeButton")[0].click();
 			}, 10);
 		},
 		closeBottom: function () {
 			let interval = setInterval(() => {
-				let targ = document.getElementsByClassName('css-1izy64v')[0];
+				let targ = document.getElementsByClassName("css-1izy64v")[0];
 				if (!targ) return;
 				clearInterval(interval);
 				targ.parentElement.removeChild(targ);
 			}, 10);
-		}
+		},
 	};
 	//知乎
-	Startup.on("www.zhihu.com",
+	Startup.on(
+		"www.zhihu.com",
 		(context) => {
-			let visual = context.Visual = new UIElement('div', 'Feast-app', true);
+			let visual = (context.Visual = new UIElement("div", "Feast-app", true));
 			Global.inject(visual.Element);
 			Global.loadVue();
 			Global.loadElement();
 			context.closeSign();
 			context.closeBottom();
-			let aside = document.getElementsByClassName('Question-sideColumn')[0];
-			context.Aside = Template.Wrapper('aside', aside, 'takeover');
-			let affix = Template.Affix('right-affix', 120, 'RightDraw', (a) => { a.style.right = '90px'; });
-			let drawer = Template.Drawer("rightDrawerContainer", 'rtl', 'RightDraw', 'onRightOpen');
+			let aside = document.getElementsByClassName("Question-sideColumn")[0];
+			context.Aside = Template.Wrapper("aside", aside, "takeover");
+			let affix = Template.Affix("right-affix", 120, "RightDraw", (a) => {
+				a.style.right = "90px";
+			});
+			let drawer = Template.Drawer(
+				"rightDrawerContainer",
+				"rtl",
+				"RightDraw",
+				"onRightOpen"
+			);
 			visual.add(affix);
 			visual.add(drawer);
-			Global.insertCss(['.Question-mainColumn { width:100% }'], document);
+			Global.insertCss([".Question-mainColumn { width:100% }"], document);
 		},
 		(context, _, plugins) => {
 			let visual = context.Visual;
@@ -547,49 +718,117 @@
 					return {
 						RightDraw: false,
 						onRightOpen: function () {
-							Global.takeover(context.Aside, document.getElementById('rightDrawerContainer'));
+							Global.takeover(
+								context.Aside,
+								document.getElementById("rightDrawerContainer")
+							);
 						},
 					};
 				},
 			};
-			const app = Template.CreateApp(App, plugins, visual.Element, () => { visual.show(); });
+			const app = Template.CreateApp(App, plugins, visual.Element, () => {
+				visual.show();
+			});
 			if (context.Aside) {
 				app.$message.success("右侧栏收起");
-			}
-			else {
+			} else {
 				app.$message.warning("没有找到捏");
 			}
 		},
-		zhihuContext);
+		zhihuContext
+	);
 	//知乎专栏
-	Startup.on("zhuanlan.zhihu.com",
+	Startup.on(
+		"zhuanlan.zhihu.com",
 		(context) => {
-			let width = '80%';
+			let width = "80%";
 			Global.insertCss([
-				'.Post-SideActions { right:calc(50vw - 700px) }',
-				'.css-78p1r9 { max-width:' + width + ' }',
-				'.Post-NormalMain .Post-Header { width:' + width + ' }',
-				'.Post-NormalMain>div, .Post-NormalSub>div  { width:' + width + ' }'
+				".Post-SideActions { right:calc(50vw - 700px) }",
+				".css-78p1r9 { max-width:" + width + " }",
+				".Post-NormalMain .Post-Header { width:" + width + " }",
+				".Post-NormalMain>div, .Post-NormalSub>div  { width:" + width + " }",
 			]);
 			context.closeSign();
 			context.closeBottom();
-		}, null, zhihuContext);
+		},
+		null,
+		zhihuContext
+	);
 	//知乎外链引导页面
-	Startup.on("link.zhihu.com",
-		(_) => {
-			let link = new URL(window.location.href).searchParams.get('target');
-			if (link) {
-				window.location.href = link;
-			}
-		});
+	Startup.on("link.zhihu.com", (_) => {
+		let link = new URL(window.location.href).searchParams.get("target");
+		if (link) {
+			window.location.href = link;
+		}
+	});
+
+	//免费资源网
+	Startup.on(
+		"www.aliyunjc.net",
+		(context) => {
+			Global.inject(context.Visual.Element);
+			Global.loadVue();
+			Global.loadElement();
+			let affix = Template.Affix(
+				"left-affix",
+				120,
+				"leftDraw",
+				(a) => {
+					a.style.left = "100px";
+				},
+				{
+					innerText : "复制",
+					attributes : {
+						"v-on:click": "copyAll",
+					},
+				}
+			);
+			context.Visual.add(affix);
+		},
+		(context, _, plugins) => {
+			document.body.oncopy = null;
+			Template.CreateApp(
+				context.App,
+				plugins,
+				context.Visual.Element,
+				() => {
+					context.Visual.show();
+				}
+			);
+		},
+		{
+			Visual: new UIElement("div", "Feast-app", true),
+			App : {
+				methods: {
+					copyAll() {
+						let text = '';
+						document.querySelectorAll('pre').forEach(x=>{
+							text += x.innerText;
+						})
+						navigator.clipboard.writeText(text).then(()=>{
+							this.$message.success("复制成功");
+						}).catch(e=>{
+							this.$message.error("复制失败");
+						});
+					},
+				},
+			},
+		}
+	);
 
 	//在以上区域编写
 	let config = Startup.BoostConfigs[href];
 	window.onload = () => {
-		Startup.PluginEvents.forEach(x => { x(window); });
-		Startup.PreloadEvents.forEach(x => { x(window, Global.Plugins); });
+		Startup.PluginEvents.forEach((x) => {
+			x(window);
+		});
+		Startup.PreloadEvents.forEach((x) => {
+			x(window, Global.Plugins);
+		});
 		config.OnStart(config.Context, window, Global.Plugins);
-		Startup.AfterloadEvents.forEach(x => { x(window, Global.Plugins); });
-	}
+		Startup.AfterloadEvents.forEach((x) => {
+			x(window, Global.Plugins);
+		});
+	};
 	config.OnBefore(config.Context);
 })();

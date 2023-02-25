@@ -38,5 +38,9 @@
 ## 知乎[外链引导](https://link.zhihu.com/)页面
 + 自动跳转
 
+## [免费资源网](https://www.aliyunjc.net/)
++ 禁用复制弹窗
++ 添加一键复制
+
 ---
 # 也许，你想[返回](README.md)?
