@@ -866,29 +866,31 @@
         }
     );
 
-	//学习啦
+    //学习啦
     Startup.on(
         "www.xuexila.com",
         (context) => {
             document.body.oncopy = null;
-			Global.inject(context.Visual.Element);
+            Global.inject(context.Visual.Element);
             Global.loadVue();
             Global.loadElement();
         },
         (context, __, plugins) => {
             document.body.oncopy = null;
-			let app = Template.CreateApp(
+            let app = Template.CreateApp(
                 context.App,
                 plugins,
                 context.Visual.Element,
                 () => {
                     context.Visual.show();
                 }
-				);
-			app.$message.success("清除 Ctrl+C 限制");
-        },{
-			Visual: new UIElement("div", "Feast-app", true),App:{}
-		}
+            );
+            app.$message.success("清除 Ctrl+C 限制");
+        },
+        {
+            Visual: new UIElement("div", "Feast-app", true),
+            App: {},
+        }
     );
 
     //在以上区域编写
