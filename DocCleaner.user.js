@@ -125,7 +125,7 @@
                         try {
                             if (typeof rule == "string")
                                 doc.styleSheets[i].insertRule(rule, 0);
-                        } catch (error) {}
+                        } catch (error) { }
                     });
                 }
                 res();
@@ -172,7 +172,7 @@
         constructor(tag, id, hidden) {
             let ele =
                 (this.Container =
-                this.Element =
+                    this.Element =
                     document.createElement(tag));
             if (id) {
                 ele.id = id;
@@ -236,10 +236,10 @@
                 return;
             }
             if (typeof before != "function") {
-                before = () => {};
+                before = () => { };
             }
             if (typeof start != "function") {
-                start = () => {};
+                start = () => { };
             }
             if (!context) {
                 context = {};
@@ -343,7 +343,7 @@
          * @param {Object} victim 被接管的元素
          * @param {String} mode 接管模式(takeover/grab)
          * @param {Function} afterCreate 后处理
-         * @returns 元素
+         * @returns {UIElement} 元素
          */
         Wrapper: function (tag, victim, mode, afterCreate) {
             let ret = new UIElement(tag);
@@ -425,6 +425,11 @@
         (context, _, plugins) => {
             let visual = context.Visual;
             const App = {
+                created(){
+                    context.Aside.onmouseleave = () => {
+                        this.draw = false;
+                    }
+                },
                 data() {
                     return {
                         draw: false,
@@ -521,6 +526,11 @@
         (context, _, plugins) => {
             let visual = context.Visual;
             const App = {
+                created(){
+                    context.RightAside.onmouseleave = () => {
+                        this.RightDraw = false;
+                    }
+                },
                 data() {
                     return {
                         RightDraw: false,
@@ -569,6 +579,11 @@
     let StackOverFlowStart = (context, _, plugins) => {
         let visual = context.Visual;
         const App = {
+            created(){
+                context.RightAside.onmouseleave = () => {
+                    this.RightDraw = false;
+                }
+            },
             data() {
                 return {
                     RightDraw: false,
@@ -626,6 +641,11 @@
         (context, _, plugins) => {
             let visual = context.Visual;
             const App = {
+                created(){
+                    context.RightAside.onmouseleave = () => {
+                        this.RightDraw = false;
+                    }
+                },
                 data() {
                     return {
                         RightDraw: false,
@@ -683,6 +703,11 @@
         (context, _, plugins) => {
             let visual = context.Visual;
             const App = {
+                created(){
+                    context.Aside.onmouseleave = () => {
+                        this.RightDraw = false;
+                    }
+                },
                 data() {
                     return {
                         RightDraw: false,
@@ -759,6 +784,11 @@
         (context, _, plugins) => {
             let visual = context.Visual;
             const App = {
+                created(){
+                    context.Aside.onmouseleave = () => {
+                        this.RightDraw = false;
+                    }
+                },
                 data() {
                     return {
                         RightDraw: false,
@@ -792,8 +822,8 @@
                 ".css-78p1r9 { max-width:" + width + " }",
                 ".Post-NormalMain .Post-Header { width:" + width + " }",
                 ".Post-NormalMain>div, .Post-NormalSub>div  { width:" +
-                    width +
-                    " }",
+                width +
+                " }",
             ]);
             context.closeSign();
             context.closeBottom();
